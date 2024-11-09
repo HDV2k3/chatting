@@ -13,9 +13,9 @@ public class OpenAPIConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Marketing API")
+                        .title("Chatting API")
                         .version("1.0.0")
-                        .description("API documentation for Marketing API")
+                        .description("API documentation for Chatting API")
                             .contact(new Contact().name("DAC VIET").email("dacviethuynh@gmail.com")));
     }
 }
