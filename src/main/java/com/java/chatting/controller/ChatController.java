@@ -27,7 +27,6 @@ import java.util.List;
 @RequestMapping("/api/v1/chat")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@SecurityRequirement(name = "bearerAuth") // Yêu cầu JWT cho tất cả các endpoint trong controller này
 public class ChatController {
 
     ChatFacade chatFacade;
@@ -36,8 +35,8 @@ public class ChatController {
 
     @MessageMapping("/chat.sendMessage")
     @Operation(summary = "Send a message",
-            description = "Gửi tin nhắn từ người gửi đến người nhận qua WebSocket.",
-            security = {@SecurityRequirement(name = "bearerAuth")})
+            description = "Gửi tin nhắn từ người gửi đến người nhận qua WebSocket."
+       )
     public GenericApiResponse<Void> sendMessage(@Payload ChatRequest messageReq, Principal principal) throws Exception {
         if (messageReq.getMessage() == null || messageReq.getMessage().trim().isEmpty()) {
             return GenericApiResponse.error("Message content is required");
@@ -61,8 +60,8 @@ public class ChatController {
 
     @MessageMapping("/chat.typing")
     @Operation(summary = "Handle typing status",
-            description = "Gửi trạng thái 'đang gõ' từ người gửi đến người nhận qua WebSocket.",
-            security = {@SecurityRequirement(name = "bearerAuth")})
+            description = "Gửi trạng thái 'đang gõ' từ người gửi đến người nhận qua WebSocket."
+    )
     public GenericApiResponse<Void> handleTyping(@Payload TypingRequest typingRequest) {
         String typingTopic = String.format("/topic/typing-%d-%d", typingRequest.getReceiverId(), typingRequest.getSenderId());
         messagingTemplate.convertAndSend(typingTopic, typingRequest);
@@ -71,24 +70,24 @@ public class ChatController {
 
     @PostMapping("/send-message")
     @Operation(summary = "Send message via REST to WebSocket",
-            description = "API REST để gửi tin nhắn, chuyển tin nhắn này tới WebSocket.",
-            security = {@SecurityRequirement(name = "bearerAuth")})
+            description = "API REST để gửi tin nhắn, chuyển tin nhắn này tới WebSocket."
+          )
     public GenericApiResponse<Void> restSendMessage(@RequestBody ChatRequest messageReq, Principal principal) throws Exception {
         return sendMessage(messageReq, principal);
     }
 
     @PostMapping("/typing")
     @Operation(summary = "Typing status via REST to WebSocket",
-            description = "API REST để gửi trạng thái 'đang gõ', chuyển trạng thái này tới WebSocket.",
-            security = {@SecurityRequirement(name = "bearerAuth")})
+            description = "API REST để gửi trạng thái 'đang gõ', chuyển trạng thái này tới WebSocket."
+         )
     public GenericApiResponse<Void> restHandleTyping(@RequestBody TypingRequest typingRequest) {
         return handleTyping(typingRequest);
     }
 
     @GetMapping("/history")
     @Operation(summary = "Get chat history",
-            description = "Lấy lịch sử trò chuyện giữa người gửi và người nhận theo ID của hai người.",
-            security = {@SecurityRequirement(name = "bearerAuth")})
+            description = "Lấy lịch sử trò chuyện giữa người gửi và người nhận theo ID của hai người."
+          )
     public GenericApiResponse<List<ChatResponse>> getChatHistory(@RequestParam int senderId, @RequestParam int receiverId) {
         List<ChatResponse> chatHistory = chatFacade.getChatHistory(senderId, receiverId);
         return GenericApiResponse.success(chatHistory);
@@ -96,8 +95,8 @@ public class ChatController {
 
     @PutMapping("/{chatId}/status")
     @Operation(summary = "Update message status",
-            description = "Cập nhật trạng thái tin nhắn theo ID của tin nhắn và trạng thái mong muốn.",
-            security = {@SecurityRequirement(name = "bearerAuth")})
+            description = "Cập nhật trạng thái tin nhắn theo ID của tin nhắn và trạng thái mong muốn."
+        )
     public GenericApiResponse<ChatResponse> updateMessageStatus(@PathVariable int chatId, @RequestParam MessageStatus status) {
         ChatResponse updatedChat = chatFacade.updateMessageStatus(chatId, status);
         chatHelper.notifyMessageStatusUpdate(updatedChat.getId(), status);
@@ -106,8 +105,8 @@ public class ChatController {
 
     @PutMapping("/mark-delivered/{userId}")
     @Operation(summary = "Mark messages as delivered",
-            description = "Đánh dấu tất cả tin nhắn gửi đến người dùng cụ thể là đã 'được nhận'.",
-            security = {@SecurityRequirement(name = "bearerAuth")})
+            description = "Đánh dấu tất cả tin nhắn gửi đến người dùng cụ thể là đã 'được nhận'."
+         )
     public GenericApiResponse<Void> markMessagesAsDelivered(@PathVariable int userId) {
         chatFacade.markMessagesAsDelivered(userId);
         return GenericApiResponse.success(null);
@@ -115,8 +114,8 @@ public class ChatController {
 
     @GetMapping("/unread")
     @Operation(summary = "Get unread message count",
-            description = "Lấy số lượng tin nhắn chưa đọc của người dùng dựa trên ID của người dùng.",
-            security = {@SecurityRequirement(name = "bearerAuth")})
+            description = "Lấy số lượng tin nhắn chưa đọc của người dùng dựa trên ID của người dùng."
+         )
     public GenericApiResponse<Integer> getUnreadMessageCount(@RequestParam int userId) {
         int count = chatFacade.getUnreadMessagesCount(userId);
         return GenericApiResponse.success(count);
@@ -124,16 +123,16 @@ public class ChatController {
 
     @GetMapping("/user-history")
     @Operation(summary = "Get user chat history",
-            description = "Lấy toàn bộ lịch sử trò chuyện của một người dùng cụ thể.",
-            security = {@SecurityRequirement(name = "bearerAuth")})
+            description = "Lấy toàn bộ lịch sử trò chuyện của một người dùng cụ thể."
+          )
     public GenericApiResponse<List<ChatHistory>> getUserChatHistory(@RequestParam int userId) {
         List<ChatHistory> chatHistory = chatFacade.getUserChatHistory(userId);
         return GenericApiResponse.success(chatHistory);
     }
     @GetMapping("/users-history")
     @Operation(summary = "Get user's chat history",
-            description = "Lấy toàn bộ lịch sử trò chuyện của mọi người dùng đã từng trò chuyện.",
-            security = {@SecurityRequirement(name = "bearerAuth")})
+            description = "Lấy toàn bộ lịch sử trò chuyện của mọi người dùng đã từng trò chuyện."
+           )
     public GenericApiResponse<PageResponse<UserChatHistoryResponse>> getUsersChatHistory(
             @RequestParam int senderId,
             @RequestParam(value = "page", required = false, defaultValue = "1") int page,

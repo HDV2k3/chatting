@@ -25,7 +25,6 @@ public class OpenAPIConfig {
                         .version("1.0.0")
                         .description("API documentation for Chatting API")
                         .contact(new Contact().name("DAC VIET").email("dacviethuynh@gmail.com"))
-                )
-                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"));
+                );
     }
 }
