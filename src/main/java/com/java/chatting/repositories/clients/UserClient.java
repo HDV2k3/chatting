@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @FeignClient(name = "user", url = "${service.url.user}", configuration = {AuthenticationRequestInterceptor.class})
+
 public interface UserClient {
     @GetMapping(value = "/users/get-by-id/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     GenericApiResponse<UserProfileResponse> getProfile(

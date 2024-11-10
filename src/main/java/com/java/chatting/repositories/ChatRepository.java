@@ -1,6 +1,9 @@
 package com.java.chatting.repositories;
 
+import com.java.chatting.dto.response.UserChatHistoryResponse;
 import com.java.chatting.entities.Chat;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -38,4 +41,23 @@ public interface ChatRepository extends JpaRepository<Chat, Integer> {
     List<Chat> findChatsBetweenUsers(
             @Param("user1Id") int user1Id,
             @Param("user2Id") int user2Id);
+
+    @Query("""
+    SELECT new com.java.chatting.dto.response.UserChatHistoryResponse(
+        c.receiverId,
+        c.messageEncryptForSender,
+        c.messageEncryptForReceiver,
+        c.sentAt
+    )
+    FROM Chat c
+    WHERE c.senderId = :senderId
+      AND c.sentAt = (
+          SELECT MAX(c2.sentAt)
+          FROM Chat c2
+          WHERE c2.senderId = :senderId
+      )
+    ORDER BY c.sentAt DESC
+""")
+    Page<UserChatHistoryResponse> getUsersChatHistory(@Param("senderId") int senderId, Pageable pageable);
+
 }

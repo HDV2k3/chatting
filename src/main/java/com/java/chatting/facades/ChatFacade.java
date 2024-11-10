@@ -4,6 +4,9 @@ import com.java.chatting.constants.MessageStatus;
 import com.java.chatting.dto.request.ChatRequest;
 import com.java.chatting.dto.response.ChatHistory;
 import com.java.chatting.dto.response.ChatResponse;
+import com.java.chatting.dto.response.PageResponse;
+import com.java.chatting.dto.response.UserChatHistoryResponse;
+import com.java.chatting.repositories.clients.dto.response.UserProfileResponse;
 import com.java.chatting.services.ChatService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -41,5 +44,9 @@ public class ChatFacade {
 
     public List<ChatHistory> getUserChatHistory(int userId) {
         return chatService.getUserChatHistory(userId);
+    }
+    public PageResponse<UserChatHistoryResponse> getUsersChatHistory(int senderId, int page, int size)
+    {
+        return chatService.getUsersChatHistory(senderId,page,size);
     }
 }

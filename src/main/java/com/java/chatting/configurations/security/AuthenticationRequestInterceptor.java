@@ -22,21 +22,27 @@ public class AuthenticationRequestInterceptor implements RequestInterceptor {
      */
     @Override
     public void apply(RequestTemplate requestTemplate) {
-        // Retrieve current request attributes (for accessing the Authorization header)
+        // Retrieve current request attributes
         ServletRequestAttributes servletRequestAttributes =
                 (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 
-        // Ensure the servletRequestAttributes is not null (could happen in a non-web request context)
+        // Ensure the servletRequestAttributes is not null
         if (servletRequestAttributes != null) {
-            // Get the Authorization header from the current HTTP request
-            var authHeader = servletRequestAttributes.getRequest().getHeader("Authorization");
+            String authHeader = servletRequestAttributes.getRequest().getHeader("Authorization");
 
             // Log the extracted header for debugging purposes
             log.info("Authorization Header: {}", authHeader);
 
-            // If the Authorization header is present and not empty, add it to the Feign request
             if (StringUtils.hasText(authHeader)) {
-                requestTemplate.header("Authorization", authHeader);
+                // Strip 'Bearer ' prefix if it exists
+                if (authHeader.startsWith("Bearer ")) {
+                    authHeader = authHeader.substring(7);
+                    log.info("Authorization Header final: {}", authHeader);
+
+                }
+
+                // Add 'Bearer ' prefix to the token before sending it in the Feign request
+                requestTemplate.header("Authorization", "Bearer " + authHeader);
             }
         }
     }

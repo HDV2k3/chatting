@@ -4,9 +4,7 @@ import com.java.chatting.constants.MessageStatus;
 import com.java.chatting.controller.helper.ChatHelper;
 import com.java.chatting.dto.request.ChatRequest;
 import com.java.chatting.dto.request.TypingRequest;
-import com.java.chatting.dto.response.ChatHistory;
-import com.java.chatting.dto.response.ChatResponse;
-import com.java.chatting.dto.response.GenericApiResponse;
+import com.java.chatting.dto.response.*;
 import com.java.chatting.facades.ChatFacade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -125,11 +123,23 @@ public class ChatController {
     }
 
     @GetMapping("/user-history")
-    @Operation(summary = "Get user's chat history",
+    @Operation(summary = "Get user chat history",
             description = "Lấy toàn bộ lịch sử trò chuyện của một người dùng cụ thể.",
             security = {@SecurityRequirement(name = "bearerAuth")})
     public GenericApiResponse<List<ChatHistory>> getUserChatHistory(@RequestParam int userId) {
         List<ChatHistory> chatHistory = chatFacade.getUserChatHistory(userId);
         return GenericApiResponse.success(chatHistory);
+    }
+    @GetMapping("/users-history")
+    @Operation(summary = "Get user's chat history",
+            description = "Lấy toàn bộ lịch sử trò chuyện của mọi người dùng đã từng trò chuyện.",
+            security = {@SecurityRequirement(name = "bearerAuth")})
+    public GenericApiResponse<PageResponse<UserChatHistoryResponse>> getUsersChatHistory(
+            @RequestParam int senderId,
+            @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") int size)
+    {
+        var result = chatFacade.getUsersChatHistory(senderId,page,size);
+        return GenericApiResponse.success(result);
     }
 }

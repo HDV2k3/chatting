@@ -2,8 +2,10 @@ package com.java.chatting.services;
 
 import com.java.chatting.constants.MessageStatus;
 import com.java.chatting.dto.request.ChatRequest;
+import com.java.chatting.dto.response.UserChatHistoryResponse;
 import com.java.chatting.dto.response.ChatHistory;
 import com.java.chatting.dto.response.ChatResponse;
+import com.java.chatting.dto.response.PageResponse;
 
 import java.util.List;
 
@@ -18,4 +20,6 @@ public interface ChatService {
 
     void  markMessagesAsDelivered(int userId);
     List<ChatHistory> getUserChatHistory(int userId);
+
+    PageResponse<UserChatHistoryResponse> getUsersChatHistory(int senderId, int page, int size);
 }

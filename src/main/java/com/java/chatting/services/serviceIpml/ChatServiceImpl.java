@@ -5,6 +5,8 @@ import com.java.chatting.constants.MessageType;
 import com.java.chatting.dto.request.ChatRequest;
 import com.java.chatting.dto.response.ChatHistory;
 import com.java.chatting.dto.response.ChatResponse;
+import com.java.chatting.dto.response.PageResponse;
+import com.java.chatting.dto.response.UserChatHistoryResponse;
 import com.java.chatting.entities.Chat;
 import com.java.chatting.entities.ChatAttachment;
 import com.java.chatting.entities.ChatStatus;
@@ -15,16 +17,19 @@ import com.java.chatting.repositories.ChatAttachmentRepository;
 import com.java.chatting.repositories.ChatRepository;
 import com.java.chatting.repositories.ChatStatusRepository;
 import com.java.chatting.repositories.UserRepository;
+import com.java.chatting.repositories.clients.UserClient;
+import com.java.chatting.repositories.clients.dto.response.UserProfileResponse;
 import com.java.chatting.services.ChatService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,6 +42,7 @@ public class ChatServiceImpl implements ChatService {
     private final UserRepository userRepository;
     private final ChatStatusRepository chatStatusRepository;
     private final ChatAttachmentRepository chatAttachmentRepository;
+    private final UserClient userClient;
 
     @Override
     @Transactional
@@ -165,4 +171,48 @@ public class ChatServiceImpl implements ChatService {
 
         return chatHistoryList;
     }
+
+    @Override
+    public PageResponse<UserChatHistoryResponse> getUsersChatHistory(int senderId, int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<UserChatHistoryResponse> pageData = chatRepository.getUsersChatHistory(senderId, pageable);
+        List<Integer> receiverIds = pageData.getContent().stream()
+                .map(UserChatHistoryResponse::getReceiverId)
+                .distinct()
+                .collect(Collectors.toList());
+        Map<Integer, UserProfileResponse> userProfiles = new HashMap<>();
+        for (Integer receiverId : receiverIds) {
+            var userProfileResponse = userClient.getProfile(receiverId);
+            if (userProfileResponse != null && userProfileResponse.getData() != null) {
+                userProfiles.put(receiverId, userProfileResponse.getData());
+            }
+        }
+        List<UserChatHistoryResponse> responses = new ArrayList<>();
+        for (UserChatHistoryResponse chatHistory : pageData.getContent()) {
+            int receiverId = chatHistory.getReceiverId();
+            UserProfileResponse user = userProfiles.get(receiverId);
+            if (user != null) {
+                UserChatHistoryResponse response = UserChatHistoryResponse.builder()
+                        .receiverId(user.getId())
+                        .firstName(user.getFirstName())
+                        .lastName(user.getLastName())
+                        .urlAvatar(null)
+                        .messageEncryptForReceiver(chatHistory.getMessageEncryptForReceiver())
+                        .messageEncryptForSender(chatHistory.getMessageEncryptForSender())
+                        .sentAt(chatHistory.getSentAt())
+                        .build();
+
+                responses.add(response);
+            }
+        }
+        return PageResponse.<UserChatHistoryResponse>builder()
+                .currentPage(page)
+                .pageSize(pageData.getSize())
+                .totalPages(pageData.getTotalPages())
+                .totalElements(pageData.getTotalElements())
+                .data(responses)
+                .build();
+    }
+
+
 }
