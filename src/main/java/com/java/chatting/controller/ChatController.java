@@ -1,4 +1,5 @@
 package com.java.chatting.controller;
+
 import com.java.chatting.constants.MessageStatus;
 import com.java.chatting.controller.helper.ChatHelper;
 import com.java.chatting.dto.request.ChatRequest;
@@ -6,10 +7,8 @@ import com.java.chatting.dto.request.TypingRequest;
 import com.java.chatting.dto.response.ChatHistory;
 import com.java.chatting.dto.response.ChatResponse;
 import com.java.chatting.dto.response.GenericApiResponse;
-import com.java.chatting.entities.Chat;
 import com.java.chatting.facades.ChatFacade;
-
-import com.java.chatting.repositories.EncryptionKeyRepository;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -19,23 +18,25 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+
 import java.security.Principal;
 import java.util.List;
 
-@Tag(name = "Chatting Controller")
+@Tag(name = "Chatting Controller", description = "API cho tính năng chat và quản lý tin nhắn")
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/chat")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ChatController {
+
     ChatFacade chatFacade;
     SimpMessagingTemplate messagingTemplate;
     ChatHelper chatHelper;
 
     @MessageMapping("/chat.sendMessage")
+    @Operation(summary = "Send a message", description = "Gửi tin nhắn từ người gửi đến người nhận qua WebSocket.")
     public GenericApiResponse<Void> sendMessage(@Payload ChatRequest messageReq, Principal principal) throws Exception {
-        // Check if the message is null or empty
         if (messageReq.getMessage() == null || messageReq.getMessage().trim().isEmpty()) {
             return GenericApiResponse.error("Message content is required");
         }
@@ -43,8 +44,6 @@ public class ChatController {
         // Retrieve public keys for sender and receiver
         String senderPublicKey = chatHelper.retrievePublicKey(messageReq.getSenderId());
         String receiverPublicKey = chatHelper.retrievePublicKey(messageReq.getReceiverId());
-
-
 
         // Encrypt messages for sender and receiver
         String encryptedMessageForReceiver = chatHelper.encryptMessage(messageReq.getMessage(), receiverPublicKey, true);
@@ -63,19 +62,38 @@ public class ChatController {
     }
 
     @MessageMapping("/chat.typing")
+    @Operation(summary = "Handle typing status", description = "Gửi trạng thái 'đang gõ' từ người gửi đến người nhận qua WebSocket.")
     public GenericApiResponse<Void> handleTyping(@Payload TypingRequest typingRequest) {
         String typingTopic = String.format("/topic/typing-%d-%d", typingRequest.getReceiverId(), typingRequest.getSenderId());
         messagingTemplate.convertAndSend(typingTopic, typingRequest);
         return GenericApiResponse.success(null);
     }
 
+    @PostMapping("/send-message")
+    @Operation(summary = "Send message via REST to WebSocket",
+            description = "API REST để gửi tin nhắn, chuyển tin nhắn này tới WebSocket.")
+    public GenericApiResponse<Void> restSendMessage(@RequestBody ChatRequest messageReq, Principal principal) throws Exception {
+        return sendMessage(messageReq, principal);
+    }
+
+    @PostMapping("/typing")
+    @Operation(summary = "Typing status via REST to WebSocket",
+            description = "API REST để gửi trạng thái 'đang gõ', chuyển trạng thái này tới WebSocket.")
+    public GenericApiResponse<Void> restHandleTyping(@RequestBody TypingRequest typingRequest) {
+        return handleTyping(typingRequest);
+    }
+
     @GetMapping("/history")
+    @Operation(summary = "Get chat history",
+            description = "Lấy lịch sử trò chuyện giữa người gửi và người nhận theo ID của hai người.")
     public GenericApiResponse<List<ChatResponse>> getChatHistory(@RequestParam int senderId, @RequestParam int receiverId) {
         List<ChatResponse> chatHistory = chatFacade.getChatHistory(senderId, receiverId);
         return GenericApiResponse.success(chatHistory);
     }
 
     @PutMapping("/{chatId}/status")
+    @Operation(summary = "Update message status",
+            description = "Cập nhật trạng thái tin nhắn theo ID của tin nhắn và trạng thái mong muốn.")
     public GenericApiResponse<ChatResponse> updateMessageStatus(@PathVariable int chatId, @RequestParam MessageStatus status) {
         ChatResponse updatedChat = chatFacade.updateMessageStatus(chatId, status);
         chatHelper.notifyMessageStatusUpdate(updatedChat.getId(), status);
@@ -83,21 +101,26 @@ public class ChatController {
     }
 
     @PutMapping("/mark-delivered/{userId}")
+    @Operation(summary = "Mark messages as delivered",
+            description = "Đánh dấu tất cả tin nhắn gửi đến người dùng cụ thể là đã 'được nhận'.")
     public GenericApiResponse<Void> markMessagesAsDelivered(@PathVariable int userId) {
         chatFacade.markMessagesAsDelivered(userId);
         return GenericApiResponse.success(null);
     }
 
     @GetMapping("/unread")
+    @Operation(summary = "Get unread message count",
+            description = "Lấy số lượng tin nhắn chưa đọc của người dùng dựa trên ID của người dùng.")
     public GenericApiResponse<Integer> getUnreadMessageCount(@RequestParam int userId) {
         int count = chatFacade.getUnreadMessagesCount(userId);
         return GenericApiResponse.success(count);
     }
 
     @GetMapping("/user-history")
+    @Operation(summary = "Get user's chat history",
+            description = "Lấy toàn bộ lịch sử trò chuyện của một người dùng cụ thể.")
     public GenericApiResponse<List<ChatHistory>> getUserChatHistory(@RequestParam int userId) {
         List<ChatHistory> chatHistory = chatFacade.getUserChatHistory(userId);
         return GenericApiResponse.success(chatHistory);
     }
-
 }
