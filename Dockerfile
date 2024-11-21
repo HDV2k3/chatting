@@ -26,4 +26,4 @@ ENV DB_PORT=3306
 EXPOSE 8080
 
 # Command to run the application, with custom JVM options or environment variables if needed
-ENTRYPOINT ["java", "-jar", "app.jar", "--server.port=8080"]
+ENTRYPOINT ["java", "-Dlogging.level.org.apache.coyote.http11=DEBUG", "-jar", "app.jar", "--server.port=8080"]
