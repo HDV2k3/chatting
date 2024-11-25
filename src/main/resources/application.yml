@@ -1,7 +1,7 @@
 #call other server
 service:
   url:
-    user: http://ec2-3-106-252-213.ap-southeast-2.compute.amazonaws.com:8080/user
+    user: http://ec2-3-25-80-181.ap-southeast-2.compute.amazonaws.com:8080/user
 
 #server name
 server:
