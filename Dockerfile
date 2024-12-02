@@ -18,12 +18,8 @@ FROM amazoncorretto:21.0.4
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
-# Optionally, set environment variables if needed (for example, for database connections)
-ENV DB_HOST=jdbc:mysql://db-chatting.cd8c028cinkb.ap-southeast-2.rds.amazonaws.com:3306/chatting
-ENV DB_PORT=3306
-
 # Expose the port your app will run on
-EXPOSE 8080
+EXPOSE 8082
 
 # Command to run the application, with custom JVM options or environment variables if needed
-ENTRYPOINT ["java", "-Dlogging.level.org.apache.coyote.http11=DEBUG", "-jar", "app.jar", "--server.port=8080"]
+ENTRYPOINT ["java", "-Dlogging.level.org.apache.coyote.http11=DEBUG", "-jar", "app.jar", "--server.port=8082"]
