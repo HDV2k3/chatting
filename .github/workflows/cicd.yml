@@ -54,7 +54,7 @@ jobs:
             docker run -d \
             -p 8082:8082 \
             --env-file /root/devhuynh/.env \
-            --name user-service \
+            --name chatting-service \
             devhuynh2003/chatting-service:latest
 
 
