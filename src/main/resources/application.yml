@@ -1,7 +1,7 @@
 #call other server
 service:
   url:
-    user: ${USER_URL}
+    user: ${URL_USER}
 
 #server name
 server:
