@@ -14,6 +14,7 @@ RUN mvn package -DskipTests
 # Start with Amazon Corretto JDK 21
 FROM amazoncorretto:21.0.4
 
+
 # Set working folder to /app and copy compiled file from the build stage
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
