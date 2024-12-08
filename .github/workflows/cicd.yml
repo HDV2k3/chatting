@@ -39,7 +39,7 @@ jobs:
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
+          password: ${{ secrets.VPS_PASSWORD }}
           script: |
             # Kéo image mới nhất từ Docker Hub
             docker pull devhuynh2003/chatting-service:latest
