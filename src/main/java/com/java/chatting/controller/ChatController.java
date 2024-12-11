@@ -86,7 +86,8 @@ public class ChatController {
 
     @GetMapping("/history")
     @Operation(summary = "Get chat history",
-            description = "Lấy lịch sử trò chuyện giữa người gửi và người nhận theo ID của hai người."
+            description = "Lấy lịch sử trò chuyện giữa người gửi và người nhận theo ID của hai người.",
+            security = {@SecurityRequirement(name = "bearerAuth")}
           )
     public GenericApiResponse<List<ChatResponse>> getChatHistory(@RequestParam int senderId, @RequestParam int receiverId) {
         List<ChatResponse> chatHistory = chatFacade.getChatHistory(senderId, receiverId);
@@ -95,8 +96,8 @@ public class ChatController {
 
     @PutMapping("/{chatId}/status")
     @Operation(summary = "Update message status",
-            description = "Cập nhật trạng thái tin nhắn theo ID của tin nhắn và trạng thái mong muốn."
-        )
+            description = "Cập nhật trạng thái tin nhắn theo ID của tin nhắn và trạng thái mong muốn.",
+            security = {@SecurityRequirement(name = "bearerAuth")})
     public GenericApiResponse<ChatResponse> updateMessageStatus(@PathVariable int chatId, @RequestParam MessageStatus status) {
         ChatResponse updatedChat = chatFacade.updateMessageStatus(chatId, status);
         chatHelper.notifyMessageStatusUpdate(updatedChat.getId(), status);
@@ -105,8 +106,8 @@ public class ChatController {
 
     @PutMapping("/mark-delivered/{userId}")
     @Operation(summary = "Mark messages as delivered",
-            description = "Đánh dấu tất cả tin nhắn gửi đến người dùng cụ thể là đã 'được nhận'."
-         )
+            description = "Đánh dấu tất cả tin nhắn gửi đến người dùng cụ thể là đã 'được nhận'.",
+            security = {@SecurityRequirement(name = "bearerAuth")})
     public GenericApiResponse<Void> markMessagesAsDelivered(@PathVariable int userId) {
         chatFacade.markMessagesAsDelivered(userId);
         return GenericApiResponse.success(null);
@@ -115,7 +116,8 @@ public class ChatController {
     @GetMapping("/unread")
     @Operation(summary = "Get unread message count",
             description = "Lấy số lượng tin nhắn chưa đọc của người dùng dựa trên ID của người dùng."
-         )
+            ,    security = {@SecurityRequirement(name = "bearerAuth")})
+
     public GenericApiResponse<Integer> getUnreadMessageCount(@RequestParam int userId) {
         int count = chatFacade.getUnreadMessagesCount(userId);
         return GenericApiResponse.success(count);
@@ -124,7 +126,7 @@ public class ChatController {
     @GetMapping("/user-history")
     @Operation(summary = "Get user chat history",
             description = "Lấy toàn bộ lịch sử trò chuyện của một người dùng cụ thể."
-          )
+            ,    security = {@SecurityRequirement(name = "bearerAuth")})
     public GenericApiResponse<List<ChatHistory>> getUserChatHistory(@RequestParam int userId) {
         List<ChatHistory> chatHistory = chatFacade.getUserChatHistory(userId);
         return GenericApiResponse.success(chatHistory);
@@ -132,7 +134,7 @@ public class ChatController {
     @GetMapping("/users-history")
     @Operation(summary = "Get user's chat history",
             description = "Lấy toàn bộ lịch sử trò chuyện của mọi người dùng đã từng trò chuyện."
-           )
+            ,    security = {@SecurityRequirement(name = "bearerAuth")})
     public GenericApiResponse<PageResponse<UserChatHistoryResponse>> getUsersChatHistory(
             @RequestParam int senderId,
             @RequestParam(value = "page", required = false, defaultValue = "1") int page,

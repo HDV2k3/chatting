@@ -158,12 +158,12 @@ public class ChatServiceImpl implements ChatService {
                 })
                 .collect(Collectors.toList());
 
-        if (chatHistoryList.stream().noneMatch(history -> history.getUserId() == 17)) {
-            var user17 = userRepository.getUserProfile(17);
+        if (chatHistoryList.stream().noneMatch(history -> history.getUserId() == 1)) {
+            var userAdmin = userRepository.getUserProfile(1);
             ChatHistory user17History = new ChatHistory();
-            user17History.setUserId(17);
-            user17History.setFirstName(user17.getFirstName());
-            user17History.setLastName(user17.getLastName());
+            user17History.setUserId(1);
+            user17History.setFirstName(userAdmin.getFirstName());
+            user17History.setLastName(userAdmin.getLastName());
             user17History.setLastMessage("Chưa có tin nhắn nào");
             user17History.setLastMessageTime(null);
             chatHistoryList.add(user17History);
