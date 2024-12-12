@@ -30,8 +30,8 @@ public class EncryptionController {
     @Operation(summary = "Generate encryption keys",
             description = "Tạo cặp khóa mã hóa cho một người dùng cụ thể theo ID.",
             security = {@SecurityRequirement(name = "bearerAuth")})
-    public GenericApiResponse<EncryptionKeyResponse> generateKeys(@RequestParam int userId) throws Exception {
-        var key = encryptionFacade.generateKeysForUser(userId);
+    public GenericApiResponse<EncryptionKeyResponse> generateKeys() throws Exception {
+        var key = encryptionFacade.generateKeysForUser();
         return GenericApiResponse.success(key);
     }
 

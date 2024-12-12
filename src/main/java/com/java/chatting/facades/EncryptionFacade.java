@@ -21,8 +21,8 @@ public class EncryptionFacade {
         this.encryptionService = encryptionService;
     }
 
-    public EncryptionKeyResponse generateKeysForUser(int userId) throws Exception  {
-        return encryptionService.generateKeysForUser(userId);
+    public EncryptionKeyResponse generateKeysForUser() throws Exception  {
+        return encryptionService.generateKeysForUser();
     }
 
     public Optional<String> getPublicKeyForUser(int userId) {
