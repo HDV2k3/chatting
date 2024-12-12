@@ -17,6 +17,7 @@ import com.java.chatting.repositories.ChatAttachmentRepository;
 import com.java.chatting.repositories.ChatRepository;
 import com.java.chatting.repositories.ChatStatusRepository;
 import com.java.chatting.repositories.UserRepository;
+import com.java.chatting.repositories.clients.RoomClient;
 import com.java.chatting.repositories.clients.UserClient;
 import com.java.chatting.repositories.clients.dto.response.UserProfileResponse;
 import com.java.chatting.services.ChatService;
@@ -32,6 +33,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.java.chatting.constants.MessageType.TEXT;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -43,6 +46,7 @@ public class ChatServiceImpl implements ChatService {
     private final ChatStatusRepository chatStatusRepository;
     private final ChatAttachmentRepository chatAttachmentRepository;
     private final UserClient userClient;
+    private final RoomClient roomClient;
 
     @Override
     @Transactional
@@ -82,7 +86,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     private MessageType determineMessageType(ChatRequest request) {
-        return request.getFileUrl() != null && !request.getFileUrl().isEmpty() ? MessageType.FILE : MessageType.TEXT;
+        return request.getFileUrl() != null && !request.getFileUrl().isEmpty() ? MessageType.FILE : TEXT;
     }
 
     @Override
@@ -137,17 +141,14 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public List<ChatHistory> getUserChatHistory(int currentUserId) {
         List<Object[]> chatHistoryData = chatRepository.findChatHistoryUserIds(currentUserId);
-
         List<ChatHistory> chatHistoryList = chatHistoryData.stream()
                 .map(data -> {
                     int userId = ((Number) data[0]).intValue();
                     var user = userRepository.getUserProfile(userId);
-
                     ChatHistory dto = new ChatHistory();
                     dto.setUserId(userId);
                     dto.setFirstName(user.getFirstName());
                     dto.setLastName(user.getLastName());
-
                     List<Chat> lastChats = chatRepository.findChatsBetweenUsers(currentUserId, userId);
                     if (!lastChats.isEmpty()) {
                         Chat lastChat = lastChats.get(0);
@@ -170,6 +171,27 @@ public class ChatServiceImpl implements ChatService {
         }
 
         return chatHistoryList;
+    }
+@Override
+    public Chat createInitialChat(int id) {
+        var sender = userRepository.getMyInfo();
+        int senderId = sender.getId();
+        var receiver = roomClient.getRoomById(id);
+        int receiverId = receiver.getData().getUserId();
+        // Check if a chat already exists between these users
+        List<Chat> existingChats = chatRepository.findChatsBetweenUsers(senderId, receiverId);
+        if (existingChats.isEmpty()) {
+            Chat initialChat = new Chat();
+            initialChat.setSenderId(senderId);
+            initialChat.setReceiverId(receiverId);
+            initialChat.setMessageEncryptForSender("");
+            initialChat.setMessageEncryptForReceiver("");
+            initialChat.setEncrypted(false);
+            initialChat.setMessageType(TEXT); // Assuming TEXT as default
+            initialChat.setSentAt(LocalDateTime.now());
+            return chatRepository.save(initialChat);
+        }
+        return null;
     }
 
     @Override
@@ -196,7 +218,7 @@ public class ChatServiceImpl implements ChatService {
                         .receiverId(user.getId())
                         .firstName(user.getFirstName())
                         .lastName(user.getLastName())
-                        .urlAvatar(null)
+                        .urlAvatar(user.getAvatar())
                         .messageEncryptForReceiver(chatHistory.getMessageEncryptForReceiver())
                         .messageEncryptForSender(chatHistory.getMessageEncryptForSender())
                         .sentAt(chatHistory.getSentAt())
@@ -213,6 +235,5 @@ public class ChatServiceImpl implements ChatService {
                 .data(responses)
                 .build();
     }
-
 
 }

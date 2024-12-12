@@ -4,6 +4,7 @@ package com.java.chatting.repositories;
 import com.java.chatting.dto.response.GenericApiResponse;
 import com.java.chatting.repositories.clients.UserClient;
 import com.java.chatting.repositories.clients.dto.response.UserProfileResponse;
+import com.java.chatting.repositories.clients.dto.response.UserResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -22,6 +23,15 @@ public class UserRepository {
     public UserProfileResponse getUserProfile(int userId) {
         UserProfileResponse result = null;
         GenericApiResponse<UserProfileResponse> clientResponse = userClient.getProfile(userId);
+
+        if (ObjectUtils.isNotEmpty(clientResponse)) {
+            result = clientResponse.getData();
+        }
+        return result;
+    }
+    public UserResponse getMyInfo() {
+        UserResponse result = null;
+        GenericApiResponse<UserResponse> clientResponse = userClient.getMyInfo();
 
         if (ObjectUtils.isNotEmpty(clientResponse)) {
             result = clientResponse.getData();

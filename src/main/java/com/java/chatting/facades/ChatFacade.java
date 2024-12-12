@@ -6,6 +6,7 @@ import com.java.chatting.dto.response.ChatHistory;
 import com.java.chatting.dto.response.ChatResponse;
 import com.java.chatting.dto.response.PageResponse;
 import com.java.chatting.dto.response.UserChatHistoryResponse;
+import com.java.chatting.entities.Chat;
 import com.java.chatting.repositories.clients.dto.response.UserProfileResponse;
 import com.java.chatting.services.ChatService;
 import lombok.AccessLevel;
@@ -48,5 +49,9 @@ public class ChatFacade {
     public PageResponse<UserChatHistoryResponse> getUsersChatHistory(int senderId, int page, int size)
     {
         return chatService.getUsersChatHistory(senderId,page,size);
+    }
+    public Chat createInitialChat(int id )
+    {
+        return chatService.createInitialChat(id );
     }
 }

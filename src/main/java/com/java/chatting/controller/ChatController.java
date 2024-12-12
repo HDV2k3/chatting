@@ -5,6 +5,7 @@ import com.java.chatting.controller.helper.ChatHelper;
 import com.java.chatting.dto.request.ChatRequest;
 import com.java.chatting.dto.request.TypingRequest;
 import com.java.chatting.dto.response.*;
+import com.java.chatting.entities.Chat;
 import com.java.chatting.facades.ChatFacade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -143,4 +144,12 @@ public class ChatController {
         var result = chatFacade.getUsersChatHistory(senderId,page,size);
         return GenericApiResponse.success(result);
     }
+
+    @GetMapping("/create-null-mess")
+    @Operation( security = {@SecurityRequirement(name = "bearerAuth")})
+     public GenericApiResponse<Chat> createInitialChat(@RequestParam int id)
+    {
+        return GenericApiResponse.success(chatFacade.createInitialChat(id));
+    }
+
 }

@@ -2,6 +2,7 @@
 service:
   url:
     user: ${URL_USER}
+    marketing: ${URL_MARKETING}
 
 #server name
 server:

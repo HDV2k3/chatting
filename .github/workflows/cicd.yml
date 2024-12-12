@@ -55,4 +55,9 @@ jobs:
             -p 8082:8082 \
             --env-file /root/devhuynh/.env \
             --name chatting-service \
+            --health-cmd="curl -f http://localhost:8082/health || exit 1" \
+            --health-interval=30s \
+            --health-timeout=10s \
+            --health-retries=3 \
             devhuynh2003/chatting-service:latest
+

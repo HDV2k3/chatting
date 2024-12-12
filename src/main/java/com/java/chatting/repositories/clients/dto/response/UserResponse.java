@@ -16,6 +16,7 @@ public class UserResponse {
     String username;
     String firstName;
     String lastName;
+    String avatar;
     Instant dob;
     Set<RoleResponse> roles;
 }
