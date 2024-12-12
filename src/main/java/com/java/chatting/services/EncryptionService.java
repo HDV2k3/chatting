@@ -9,7 +9,7 @@ import java.util.List;
 
 
 public interface EncryptionService {
-    EncryptionKeyResponse generateKeysForUser() throws Exception;
+    EncryptionKeyResponse generateKeysForUser(int userId) throws Exception;
     String getPublicKeyForUser(int userId) ;
     String getPrivateKeyForUser(int userId);
     String encryptMessage(String message, String publicKeyString) throws Exception;

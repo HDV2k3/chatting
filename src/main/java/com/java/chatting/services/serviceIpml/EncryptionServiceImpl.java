@@ -39,9 +39,8 @@ public class EncryptionServiceImpl implements EncryptionService {
 
     @Override
     @Transactional
-    public EncryptionKeyResponse generateKeysForUser() throws Exception {
-        var user = userClient.getMyInfo();
-        int userId =user.getData().getId();
+    public EncryptionKeyResponse generateKeysForUser(int userId) throws Exception {
+        var user = userClient.getProfile(userId);
         if (user == null) {
             throw new AppException(ErrorCode.USER_NOT_FOUND);
         }
