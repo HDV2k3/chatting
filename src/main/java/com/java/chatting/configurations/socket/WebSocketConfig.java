@@ -22,7 +22,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("http://62.72.30.111:3001")
+                .setAllowedOriginPatterns("http://ec2-54-252-160-78.ap-southeast-2.compute.amazonaws.com:3000")
                 .withSockJS();
     }
     @Bean
